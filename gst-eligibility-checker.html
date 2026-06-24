@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GST Registration Eligibility Checker | IncomeAIHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  /* ── Design Tokens ──────────────────────────────── */
+  :root {
+    --bg:          #0b0d11;
+    --surface:     #13161d;
+    --surface-2:   #1b1f2a;
+    --border:      rgba(255,255,255,0.07);
+    --border-hover:rgba(255,255,255,0.15);
+    --gold:        #f5c842;
+    --gold-dim:    rgba(245,200,66,0.12);
+    --gold-glow:   rgba(245,200,66,0.25);
+    --emerald:     #34d399;
+    --emerald-dim: rgba(52,211,153,0.12);
+    --violet:      #a78bfa;
+    --violet-dim:  rgba(167,139,250,0.12);
+    --red:         #f87171;
+    --red-dim:     rgba(248,113,113,0.12);
+    --amber:       #fb923c;
+    --amber-dim:   rgba(251,146,60,0.12);
+    --text:        #e8eaf0;
+    --text-muted:  #7a8099;
+    --text-dim:    #4a5168;
+    --radius:      14px;
+    --radius-sm:   8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── AdSense Top Banner ─────────────────────────── */
+  .ad-banner {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    font-family: 'DM Mono', monospace;
+  }
+  .ad-banner span { color: var(--gold); font-weight: 500; }
+
+  /* ── Header ─────────────────────────────────────── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 1.1rem; color: var(--gold);
+    text-decoration: none;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--gold) 0%, #e6a800 100%);
+    border-radius: 8px; display: grid; place-items: center;
+    font-size: 16px;
+  }
+  .logo-sub { color: var(--text-muted); font-size: 0.7rem; font-weight: 400; font-family: 'DM Sans', sans-serif; display: block; }
+  .header-badge {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    background: var(--gold-dim); color: var(--gold);
+    border: 1px solid rgba(245,200,66,0.2);
+    padding: 4px 10px; border-radius: 20px;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Hero ───────────────────────────────────────── */
+  .hero {
+    text-align: center;
+    padding: 48px 24px 32px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 16px;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .hero-eyebrow::before, .hero-eyebrow::after {
+    content: ''; display: block; width: 24px; height: 1px; background: var(--gold); opacity: 0.4;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif; font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-weight: 800; line-height: 1.2; margin-bottom: 12px;
+    background: linear-gradient(135deg, #fff 40%, var(--gold) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .hero p {
+    color: var(--text-muted); font-size: 0.95rem; max-width: 500px; margin: 0 auto;
+  }
+
+  /* ── Main Layout ────────────────────────────────── */
+  .container {
+    max-width: 900px; margin: 0 auto; padding: 0 20px 60px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  }
+  @media (max-width: 700px) { .container { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--border-hover); }
+
+  .card-title {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+  }
+  .card-title .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--gold);
+  }
+
+  /* ── Form Elements ──────────────────────────────── */
+  .field { margin-bottom: 18px; }
+  label {
+    display: block; font-size: 0.82rem; font-weight: 500;
+    color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.02em;
+  }
+  label .req { color: var(--gold); margin-left: 2px; }
+
+  select, input[type="number"], input[type="text"] {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.92rem;
+    padding: 11px 14px;
+    border-radius: var(--radius-sm);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+  select { cursor: pointer; }
+  select:focus, input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-dim);
+  }
+  select option { background: #1b1f2a; }
+
+  .input-group {
+    display: flex; align-items: center;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .input-group:focus-within {
+    border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-dim);
+  }
+  .input-prefix {
+    padding: 11px 12px; font-family: 'DM Mono', monospace;
+    font-size: 0.85rem; color: var(--gold); background: var(--gold-dim);
+    border-right: 1px solid var(--border); white-space: nowrap;
+  }
+  .input-group input {
+    border: none; background: transparent; flex: 1;
+    padding: 11px 12px; box-shadow: none;
+  }
+  .input-group input:focus { box-shadow: none; }
+
+  .hint { font-size: 0.75rem; color: var(--text-dim); margin-top: 5px; }
+
+  .toggle-group {
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .toggle-btn {
+    flex: 1; min-width: 100px; padding: 9px 10px; cursor: pointer;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text-muted); border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500;
+    text-align: center; transition: all 0.18s; user-select: none;
+  }
+  .toggle-btn:hover { border-color: var(--border-hover); color: var(--text); }
+  .toggle-btn.active {
+    background: var(--gold-dim); border-color: var(--gold);
+    color: var(--gold); font-weight: 600;
+  }
+  .toggle-btn.active-emerald {
+    background: var(--emerald-dim); border-color: var(--emerald);
+    color: var(--emerald);
+  }
+
+  /* ── CTA Button ─────────────────────────────────── */
+  .btn-check {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, var(--gold) 0%, #e6a800 100%);
+    color: #0b0d11; font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 0.95rem; letter-spacing: 0.04em; border: none;
+    border-radius: var(--radius-sm); cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    margin-top: 8px;
+  }
+  .btn-check:hover { opacity: 0.92; transform: translateY(-1px); }
+  .btn-check:active { transform: translateY(0); }
+
+  .btn-reset {
+    width: 100%; padding: 10px;
+    background: transparent; color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    cursor: pointer; margin-top: 8px; transition: all 0.18s;
+  }
+  .btn-reset:hover { border-color: var(--border-hover); color: var(--text); }
+
+  /* ── Result Panel ───────────────────────────────── */
+  .result-panel {
+    grid-column: 1 / -1;
+    display: none;
+  }
+  .result-panel.show { display: block; }
+
+  .result-card {
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .result-header {
+    padding: 20px 24px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .result-icon {
+    width: 52px; height: 52px; border-radius: 12px;
+    display: grid; place-items: center; font-size: 24px; flex-shrink: 0;
+  }
+  .result-title {
+    font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700;
+  }
+  .result-sub { font-size: 0.85rem; margin-top: 2px; }
+
+  /* Eligible */
+  .result-eligible .result-header {
+    background: rgba(52,211,153,0.08);
+    border: 1px solid rgba(52,211,153,0.2);
+    border-bottom: none;
+  }
+  .result-eligible .result-icon { background: var(--emerald-dim); }
+  .result-eligible .result-title { color: var(--emerald); }
+  .result-eligible .result-sub { color: rgba(52,211,153,0.6); }
+
+  /* Mandatory */
+  .result-mandatory .result-header {
+    background: rgba(248,113,113,0.08);
+    border: 1px solid rgba(248,113,113,0.2);
+    border-bottom: none;
+  }
+  .result-mandatory .result-icon { background: var(--red-dim); }
+  .result-mandatory .result-title { color: var(--red); }
+  .result-mandatory .result-sub { color: rgba(248,113,113,0.6); }
+
+  /* Voluntary / Threshold */
+  .result-voluntary .result-header {
+    background: rgba(251,146,60,0.08);
+    border: 1px solid rgba(251,146,60,0.2);
+    border-bottom: none;
+  }
+  .result-voluntary .result-icon { background: var(--amber-dim); }
+  .result-voluntary .result-title { color: var(--amber); }
+  .result-voluntary .result-sub { color: rgba(251,146,60,0.6); }
+
+  /* Not Required */
+  .result-not-required .result-header {
+    background: var(--violet-dim);
+    border: 1px solid rgba(167,139,250,0.2);
+    border-bottom: none;
+  }
+  .result-not-required .result-icon { background: var(--violet-dim); }
+  .result-not-required .result-title { color: var(--violet); }
+  .result-not-required .result-sub { color: rgba(167,139,250,0.6); }
+
+  .result-body {
+    background: var(--surface); padding: 24px;
+    border: 1px solid var(--border); border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+
+  .info-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px; margin-bottom: 20px;
+  }
+  .info-item {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 14px;
+  }
+  .info-label {
+    font-size: 0.72rem; color: var(--text-dim);
+    font-family: 'DM Mono', monospace; letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .info-value { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+  .info-value.gold { color: var(--gold); }
+  .info-value.emerald { color: var(--emerald); }
+  .info-value.red { color: var(--red); }
+  .info-value.amber { color: var(--amber); }
+  .info-value.violet { color: var(--violet); }
+
+  .checklist { list-style: none; margin-bottom: 20px; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 0; border-bottom: 1px solid var(--border);
+    font-size: 0.87rem; color: var(--text-muted); line-height: 1.5;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li .icon { flex-shrink: 0; margin-top: 2px; font-size: 14px; }
+
+  .penalty-box {
+    background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.2);
+    border-radius: var(--radius-sm); padding: 14px 16px; margin-top: 16px;
+  }
+  .penalty-title {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.78rem;
+    color: var(--red); text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .penalty-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; }
+
+  .doc-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px; margin-top: 16px;
+  }
+  .doc-item {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 12px;
+    font-size: 0.8rem; color: var(--text-muted);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* ── Threshold Bar ──────────────────────────────── */
+  .threshold-bar-wrap { margin: 16px 0; }
+  .threshold-labels {
+    display: flex; justify-content: space-between;
+    font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    color: var(--text-dim); margin-bottom: 6px;
+  }
+  .threshold-track {
+    height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .threshold-fill {
+    height: 100%; border-radius: 99px;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .threshold-pct {
+    text-align: right; font-family: 'DM Mono', monospace;
+    font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;
+  }
+
+  /* ── Section Heading inside result body ─────────── */
+  .section-heading {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.78rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-dim); margin: 20px 0 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-heading::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── AdSense Mid ─────────────────────────────────── */
+  .ad-mid {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px; text-align: center;
+    color: var(--text-dim); font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.06em; min-height: 90px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── Quick Reference ────────────────────────────── */
+  .quick-ref {
+    grid-column: 1 / -1;
+  }
+  .ref-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px; margin-top: 12px;
+  }
+  .ref-card {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px;
+  }
+  .ref-state { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--text-dim); }
+  .ref-threshold { font-weight: 700; font-size: 1.05rem; color: var(--gold); font-family: 'Syne', sans-serif; }
+  .ref-desc { font-size: 0.76rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── Footer ─────────────────────────────────────── */
+  footer {
+    background: var(--surface); border-top: 1px solid var(--border);
+    text-align: center; padding: 20px;
+    font-size: 0.75rem; color: var(--text-dim);
+  }
+  footer a { color: var(--gold); text-decoration: none; }
+
+  /* ── Animations ─────────────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .result-panel.show { animation: fadeUp 0.35s ease both; }
+
+  /* ── Scrollbar ──────────────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- AdSense Top -->
+<div class="ad-banner">
+  <span>ADVERTISEMENT</span> — Google AdSense Banner (728×90)
+</div>
+
+<!-- Header -->
+<header>
+  <a class="logo" href="#">
+    <div class="logo-icon">₹</div>
+    <div>
+      IncomeAIHub
+      <span class="logo-sub">GST Tools Suite</span>
+    </div>
+  </a>
+  <span class="header-badge">FY 2025–26 UPDATED</span>
+</header>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">GST Registration</div>
+  <h1>Eligibility Checker</h1>
+  <p>अपना Turnover, Business Type और State डालें — तुरंत जानें GST Registration जरूरी है या नहीं।</p>
+</div>
+
+<!-- Main Grid -->
+<div class="container">
+
+  <!-- Form Card 1: Business Details -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>Business Details</div>
+
+    <div class="field">
+      <label>Business Type <span class="req">*</span></label>
+      <select id="businessType" onchange="onBusinessTypeChange()">
+        <option value="">— Select करें —</option>
+        <option value="goods">Goods (Manufacturer / Trader)</option>
+        <option value="services">Services Provider</option>
+        <option value="both">Both Goods + Services</option>
+        <option value="ecommerce">E-Commerce Operator</option>
+        <option value="ecommerce_seller">E-Commerce Seller (Flipkart/Amazon)</option>
+        <option value="import_export">Import / Export Business</option>
+        <option value="ngo">NGO / Trust / Society</option>
+        <option value="composition">Composition Scheme Preference</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>State / UT <span class="req">*</span></label>
+      <select id="stateType">
+        <option value="normal">Normal State (Chhattisgarh, MP, UP आदि)</option>
+        <option value="special">Special Category State (NE States, J&K, Uttarakhand, HP)</option>
+      </select>
+      <div class="hint">Special Category में threshold कम होता है।</div>
+    </div>
+
+    <div class="field">
+      <label>Registration Category</label>
+      <div class="toggle-group" id="regCatGroup">
+        <div class="toggle-btn active" data-val="regular" onclick="selectToggle('regCatGroup', this)">Regular</div>
+        <div class="toggle-btn" data-val="casual" onclick="selectToggle('regCatGroup', this)">Casual Taxable</div>
+        <div class="toggle-btn" data-val="nri" onclick="selectToggle('regCatGroup', this)">Non-Resident</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Existing GSTIN है?</label>
+      <div class="toggle-group" id="existingGSTGroup">
+        <div class="toggle-btn active" data-val="no" onclick="selectToggle('existingGSTGroup', this)">नहीं</div>
+        <div class="toggle-btn" data-val="yes" onclick="selectToggle('existingGSTGroup', this)">हाँ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Card 2: Turnover & Flags -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>Turnover & Triggers</div>
+
+    <div class="field">
+      <label>Annual Aggregate Turnover (AAT) <span class="req">*</span></label>
+      <div class="input-group">
+        <span class="input-prefix">₹</span>
+        <input type="number" id="turnover" placeholder="जैसे: 2500000" min="0" max="9999999999" />
+      </div>
+      <div class="hint">Last 12 महीनों का कुल turnover (सभी states मिलाकर)</div>
+    </div>
+
+    <div class="field">
+      <label>Turnover Unit</label>
+      <div class="toggle-group" id="turnoverUnit">
+        <div class="toggle-btn active" data-val="rupees" onclick="selectToggle('turnoverUnit', this); formatHint()">₹ Rupees</div>
+        <div class="toggle-btn" data-val="lakh" onclick="selectToggle('turnoverUnit', this); formatHint()">Lakh (L)</div>
+        <div class="toggle-btn" data-val="crore" onclick="selectToggle('turnoverUnit', this); formatHint()">Crore (Cr)</div>
+      </div>
+    </div>
+
+    <div id="turnoverDisplay" class="hint" style="color:var(--gold);font-family:'DM Mono',monospace;font-size:0.82rem;margin-top:2px;"></div>
+
+    <div class="field" style="margin-top:16px;">
+      <label>Special Triggers (Optional — किसी पर tick करें)</label>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+        <label style="display:flex;align-items:center;gap:10px;color:var(--text-muted);font-size:0.84rem;cursor:pointer;">
+          <input type="checkbox" id="chkInterState" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer;" />
+          Inter-State Supply करते हैं
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;color:var(--text-muted);font-size:0.84rem;cursor:pointer;">
+          <input type="checkbox" id="chkTDS" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer;" />
+          TDS Deduction liable हैं (Sec 51)
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;color:var(--text-muted);font-size:0.84rgb;cursor:pointer;">
+          <input type="checkbox" id="chkReverse" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer;" />
+          Reverse Charge Mechanism (RCM) applicable
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;color:var(--text-muted);font-size:0.84rem;cursor:pointer;">
+          <input type="checkbox" id="chkExempt" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer;" />
+          Only Exempt / Nil-rated Supplies
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;color:var(--text-muted);font-size:0.84rem;cursor:pointer;">
+          <input type="checkbox" id="chkVoluntary" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer;" />
+          Voluntary Registration चाहते हैं
+        </label>
+      </div>
+    </div>
+
+    <button class="btn-check" onclick="checkEligibility()">✦ Eligibility Check करें</button>
+    <button class="btn-reset" onclick="resetForm()">↺ Reset</button>
+  </div>
+
+  <!-- AdSense Mid -->
+  <div class="ad-mid">
+    Google AdSense — Rectangle Ad (336×280)
+  </div>
+
+  <!-- Result Panel -->
+  <div class="result-panel" id="resultPanel">
+    <div class="result-card" id="resultCard">
+      <div class="result-header" id="resultHeader">
+        <div class="result-icon" id="resultIcon"></div>
+        <div>
+          <div class="result-title" id="resultTitle"></div>
+          <div class="result-sub" id="resultSub"></div>
+        </div>
+      </div>
+      <div class="result-body" id="resultBody"></div>
+    </div>
+  </div>
+
+  <!-- Quick Reference -->
+  <div class="card quick-ref">
+    <div class="card-title"><span class="dot"></span>GST Threshold Quick Reference</div>
+    <div class="ref-grid">
+      <div class="ref-card">
+        <div class="ref-state">Normal State — Goods</div>
+        <div class="ref-threshold">₹40 Lakh</div>
+        <div class="ref-desc">Manufacturer / Trader (Mandatory limit)</div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-state">Normal State — Services</div>
+        <div class="ref-threshold">₹20 Lakh</div>
+        <div class="ref-desc">Service Providers ka threshold</div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-state">Special Category — Goods</div>
+        <div class="ref-threshold">₹20 Lakh</div>
+        <div class="ref-desc">NE + J&K + HP + Uttarakhand</div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-state">Special Category — Services</div>
+        <div class="ref-threshold">₹10 Lakh</div>
+        <div class="ref-desc">Manipur, Mizoram, Nagaland, Tripura</div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-state">Composition Scheme — Goods</div>
+        <div class="ref-threshold">₹1.5 Crore</div>
+        <div class="ref-desc">Maximum turnover for composition</div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-state">E-Commerce Sellers</div>
+        <div class="ref-threshold">No Limit</div>
+        <div class="ref-desc">Turnover से नहीं — mandatory registration</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- Footer -->
+<footer>
+  <p>यह tool केवल informational है। Actual GST filing के लिए CA से consult करें।</p>
+  <p style="margin-top:6px;">© 2025 <a href="#">IncomeAIHub</a> · Raipur, CG · GST Act 2017 के अनुसार</p>
+</footer>
+
+<script>
+  /* ── Toggle Helper ──────────────────────────────── */
+  function selectToggle(groupId, el) {
+    document.querySelectorAll(`#${groupId} .toggle-btn`).forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function getToggleVal(groupId) {
+    const active = document.querySelector(`#${groupId} .toggle-btn.active`);
+    return active ? active.dataset.val : null;
+  }
+
+  /* ── Business Type Change ───────────────────────── */
+  function onBusinessTypeChange() {
+    const val = document.getElementById('businessType').value;
+    // Auto-hint for state field
+  }
+
+  /* ── Turnover Formatter ─────────────────────────── */
+  function formatHint() {
+    const raw = parseFloat(document.getElementById('turnover').value);
+    if (!raw || isNaN(raw)) { document.getElementById('turnoverDisplay').textContent = ''; return; }
+    const unit = getToggleVal('turnoverUnit');
+    const inRs = unit === 'lakh' ? raw * 100000 : unit === 'crore' ? raw * 10000000 : raw;
+    document.getElementById('turnoverDisplay').textContent = '= ' + formatINR(inRs);
+  }
+
+  document.getElementById('turnover').addEventListener('input', formatHint);
+
+  function formatINR(n) {
+    if (n >= 10000000) return '₹' + (n / 10000000).toFixed(2) + ' Crore';
+    if (n >= 100000)   return '₹' + (n / 100000).toFixed(2) + ' Lakh';
+    return '₹' + n.toLocaleString('en-IN');
+  }
+
+  /* ── Main Logic ─────────────────────────────────── */
+  function checkEligibility() {
+    const businessType = document.getElementById('businessType').value;
+    const stateType    = document.getElementById('stateType').value;
+    const regCat       = getToggleVal('regCatGroup');
+    const raw          = parseFloat(document.getElementById('turnover').value);
+    const unit         = getToggleVal('turnoverUnit');
+
+    // Validate
+    if (!businessType) { alert('Business Type select करें।'); return; }
+    if (!raw || isNaN(raw) || raw < 0) { alert('Valid Turnover enter करें।'); return; }
+
+    const turnover = unit === 'lakh' ? raw * 100000 : unit === 'crore' ? raw * 10000000 : raw;
+
+    const chkInterState = document.getElementById('chkInterState').checked;
+    const chkTDS        = document.getElementById('chkTDS').checked;
+    const chkReverse    = document.getElementById('chkReverse').checked;
+    const chkExempt     = document.getElementById('chkExempt').checked;
+    const chkVoluntary  = document.getElementById('chkVoluntary').checked;
+
+    // Thresholds
+    let threshold = 0;
+    let thresholdLabel = '';
+    if (businessType === 'ecommerce' || businessType === 'ecommerce_seller') {
+      threshold = 0; thresholdLabel = 'No Threshold (Mandatory)';
+    } else if (businessType === 'goods' || businessType === 'composition') {
+      threshold = stateType === 'special' ? 2000000 : 4000000;
+      thresholdLabel = stateType === 'special' ? '₹20 Lakh' : '₹40 Lakh';
+    } else if (businessType === 'services') {
+      threshold = stateType === 'special' ? 1000000 : 2000000;
+      thresholdLabel = stateType === 'special' ? '₹10 Lakh' : '₹20 Lakh';
+    } else if (businessType === 'both') {
+      threshold = stateType === 'special' ? 2000000 : 2000000;
+      thresholdLabel = stateType === 'special' ? '₹20 Lakh' : '₹20 Lakh';
+    } else if (businessType === 'import_export') {
+      threshold = 0; thresholdLabel = 'No Threshold (Mandatory)';
+    } else if (businessType === 'ngo') {
+      threshold = stateType === 'special' ? 1000000 : 2000000;
+      thresholdLabel = stateType === 'special' ? '₹10 Lakh' : '₹20 Lakh';
+    }
+
+    // Force mandatory triggers
+    const forcedMandatory = chkInterState || chkTDS || chkReverse
+      || businessType === 'ecommerce' || businessType === 'ecommerce_seller'
+      || businessType === 'import_export' || regCat === 'casual' || regCat === 'nri';
+
+    // Composition cap
+    const compositionExceeded = businessType === 'composition' && turnover > 15000000;
+
+    // Result logic
+    let verdict, type;
+    if (forcedMandatory || (threshold === 0 && businessType !== 'ngo')) {
+      verdict = 'MANDATORY'; type = 'mandatory';
+    } else if (compositionExceeded) {
+      verdict = 'MANDATORY'; type = 'mandatory';
+    } else if (chkExempt && turnover < threshold) {
+      verdict = 'NOT_REQUIRED'; type = 'not-required';
+    } else if (turnover >= threshold) {
+      verdict = 'MANDATORY'; type = 'mandatory';
+    } else if (chkVoluntary) {
+      verdict = 'VOLUNTARY'; type = 'voluntary';
+    } else {
+      verdict = 'NOT_REQUIRED'; type = 'not-required';
+    }
+
+    renderResult(verdict, type, {
+      turnover, threshold, thresholdLabel,
+      businessType, stateType, regCat,
+      chkInterState, chkTDS, chkReverse, chkExempt, chkVoluntary,
+      compositionExceeded, raw, unit, forcedMandatory
+    });
+  }
+
+  /* ── Render ─────────────────────────────────────── */
+  function renderResult(verdict, type, d) {
+    const panel = document.getElementById('resultPanel');
+    const card  = document.getElementById('resultCard');
+    const header = document.getElementById('resultHeader');
+
+    // Reset classes
+    card.className = 'result-card result-' + type;
+    header.className = 'result-header';
+
+    const pct = d.threshold > 0
+      ? Math.min(100, Math.round((d.turnover / d.threshold) * 100)) : 100;
+    const fillColor = type === 'mandatory' ? 'var(--red)' :
+                      type === 'voluntary' ? 'var(--amber)' :
+                      type === 'not-required' ? 'var(--violet)' : 'var(--emerald)';
+    const turnoverStr = formatINR(d.turnover);
+
+    let iconEmoji, titleText, subText;
+    if (verdict === 'MANDATORY') {
+      iconEmoji = '⚠️'; titleText = 'GST Registration अनिवार्य है';
+      subText   = 'आपको तुरंत GST Registration करना होगा।';
+    } else if (verdict === 'VOLUNTARY') {
+      iconEmoji = '💡'; titleText = 'Voluntary Registration कर सकते हैं';
+      subText   = 'अभी mandatory नहीं है, लेकिन लेना फायदेमंद हो सकता है।';
+    } else {
+      iconEmoji = '✅'; titleText = 'GST Registration आवश्यक नहीं';
+      subText   = 'आपका turnover threshold से कम है। अभी जरूरी नहीं।';
+    }
+
+    document.getElementById('resultIcon').textContent  = iconEmoji;
+    document.getElementById('resultTitle').textContent = titleText;
+    document.getElementById('resultSub').textContent   = subText;
+
+    // Reasons
+    let reasons = [];
+    if (d.forcedMandatory) {
+      if (d.chkInterState) reasons.push({ icon: '🔴', text: 'Inter-State Supply — turnover limit लागू नहीं, registration mandatory है।' });
+      if (d.chkTDS) reasons.push({ icon: '🔴', text: 'TDS Deduction (Sec 51) — mandatory registration trigger।' });
+      if (d.chkReverse) reasons.push({ icon: '🔴', text: 'Reverse Charge Mechanism applicable — GST registration compulsory।' });
+      if (d.regCat === 'casual') reasons.push({ icon: '🔴', text: 'Casual Taxable Person — turnover से पहले registration लेना जरूरी।' });
+      if (d.regCat === 'nri') reasons.push({ icon: '🔴', text: 'Non-Resident Taxable Person — advance registration mandatory।' });
+      if (d.businessType === 'ecommerce') reasons.push({ icon: '🔴', text: 'E-Commerce Operator — हमेशा mandatory, चाहे turnover कुछ भी हो।' });
+      if (d.businessType === 'ecommerce_seller') reasons.push({ icon: '🔴', text: 'E-Commerce platform पर selling — mandatory registration।' });
+      if (d.businessType === 'import_export') reasons.push({ icon: '🔴', text: 'Import/Export business — IGST Act के तहत mandatory।' });
+    }
+    if (d.compositionExceeded) {
+      reasons.push({ icon: '🔴', text: `Composition Scheme limit (₹1.5 Cr) exceed हुई — regular GST mandatory।` });
+    }
+    if (d.turnover >= d.threshold && d.threshold > 0 && !d.forcedMandatory) {
+      reasons.push({ icon: '🔴', text: `Turnover ${turnoverStr} ≥ Threshold ${d.thresholdLabel} — mandatory registration।` });
+    }
+    if (verdict === 'VOLUNTARY') {
+      reasons.push({ icon: '💡', text: 'Voluntary registration से ITC claim, B2B credibility और inter-state business में मदद मिलती है।' });
+    }
+    if (verdict === 'NOT_REQUIRED' && d.chkExempt) {
+      reasons.push({ icon: '✅', text: 'केवल Exempt/Nil-rated supply — GST registration आवश्यक नहीं।' });
+    }
+    if (verdict === 'NOT_REQUIRED' && !d.chkExempt) {
+      reasons.push({ icon: '✅', text: `Turnover ${turnoverStr} < Threshold ${d.thresholdLabel} — अभी registration mandatory नहीं।` });
+    }
+
+    // Required documents
+    const docs = [
+      { icon: '🪪', label: 'PAN Card' },
+      { icon: '📄', label: 'Aadhaar Card' },
+      { icon: '🏠', label: 'Address Proof' },
+      { icon: '🏦', label: 'Bank Statement / Cancelled Cheque' },
+      { icon: '📸', label: 'Passport Photo' },
+      { icon: '📜', label: 'Business Registration Proof' },
+      ...(d.businessType === 'ecommerce_seller' ? [{ icon: '🛒', label: 'E-Commerce Agreement' }] : []),
+      ...(d.businessType === 'import_export'    ? [{ icon: '🌐', label: 'IEC Certificate' }] : []),
+      ...(d.regCat === 'casual' || d.regCat === 'nri' ? [{ icon: '💰', label: 'Advance Tax Deposit Proof' }] : []),
+    ];
+
+    // Build HTML
+    let html = `
+      <!-- Turnover vs Threshold Bar -->
+      <div class="threshold-bar-wrap">
+        <div class="threshold-labels">
+          <span>₹0</span>
+          <span>Threshold: ${d.thresholdLabel || 'N/A'}</span>
+        </div>
+        <div class="threshold-track">
+          <div class="threshold-fill" style="width:${pct}%;background:${fillColor};"></div>
+        </div>
+        <div class="threshold-pct">${d.threshold > 0 ? pct + '% of threshold' : 'No threshold applicable'}</div>
+      </div>
+
+      <!-- Key Info Grid -->
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Your Turnover</div>
+          <div class="info-value gold">${turnoverStr}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Applicable Threshold</div>
+          <div class="info-value">${d.thresholdLabel || 'Mandatory'}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">State Category</div>
+          <div class="info-value">${d.stateType === 'special' ? 'Special Category' : 'Normal State'}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Registration Type</div>
+          <div class="info-value">${d.regCat === 'casual' ? 'Casual Taxable' : d.regCat === 'nri' ? 'Non-Resident' : 'Regular'}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Verdict</div>
+          <div class="info-value ${type === 'mandatory' ? 'red' : type === 'voluntary' ? 'amber' : 'emerald'}">${verdict}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">% of Threshold Used</div>
+          <div class="info-value">${d.threshold > 0 ? pct + '%' : '—'}</div>
+        </div>
+      </div>
+
+      <!-- Reasons -->
+      <div class="section-heading">Eligibility Reasons</div>
+      <ul class="checklist">
+        ${reasons.map(r => `<li><span class="icon">${r.icon}</span><span>${r.text}</span></li>`).join('')}
+      </ul>
+    `;
+
+    // Next Steps
+    if (verdict === 'MANDATORY') {
+      html += `
+        <div class="section-heading">Next Steps</div>
+        <ul class="checklist">
+          <li><span class="icon">1️⃣</span><span><b>GST Portal पर जाएं:</b> gst.gov.in → Services → Registration → New Registration।</span></li>
+          <li><span class="icon">2️⃣</span><span><b>Documents तैयार करें</b> (नीचे देखें) और application भरें।</span></li>
+          <li><span class="icon">3️⃣</span><span><b>ARN नंबर</b> मिलेगा — 7 working days में approval।</span></li>
+          <li><span class="icon">4️⃣</span><span><b>GSTIN मिलने के बाद</b> invoices पर GST number डालना जरूरी है।</span></li>
+          <li><span class="icon">⚠️</span><span>देरी पर <b>penalty: ₹10,000 या Tax amount</b> (जो ज्यादा हो)।</span></li>
+        </ul>
+        <div class="penalty-box">
+          <div class="penalty-title">⚠️ Penalty Warning</div>
+          <div class="penalty-text">
+            GST Act Sec 122 के तहत — बिना registration के supply करने पर <b>₹10,000 या Tax evaded amount</b> (whichever is higher) penalty लग सकती है। साथ ही criminal prosecution भी संभव है।
+          </div>
+        </div>`;
+    } else if (verdict === 'VOLUNTARY') {
+      html += `
+        <div class="section-heading">Voluntary Registration के फायदे</div>
+        <ul class="checklist">
+          <li><span class="icon">✅</span><span><b>ITC (Input Tax Credit) claim</b> कर सकते हैं — खर्चों पर tax वापस मिलेगा।</span></li>
+          <li><span class="icon">✅</span><span><b>B2B clients को invoice</b> — बड़ी companies GST registered vendors prefer करती हैं।</span></li>
+          <li><span class="icon">✅</span><span><b>Inter-State business</b> बिना restriction के कर सकते हैं।</span></li>
+          <li><span class="icon">✅</span><span><b>Business credibility</b> बढ़ती है — tenders और govt contracts में helpful।</span></li>
+          <li><span class="icon">⚠️</span><span>Voluntary registration के बाद <b>GST returns file करना mandatory</b> हो जाएगा।</span></li>
+        </ul>`;
+    } else {
+      html += `
+        <div class="section-heading">जब Registration जरूरी हो जाए</div>
+        <ul class="checklist">
+          <li><span class="icon">📈</span><span>Turnover threshold cross होते ही <b>30 days में</b> registration लें।</span></li>
+          <li><span class="icon">🔄</span><span>अगर Inter-State supply शुरू करें तो <b>पहले ही</b> registration लें।</span></li>
+          <li><span class="icon">📊</span><span>Turnover track करते रहें — quarterly review करें।</span></li>
+          <li><span class="icon">💡</span><span>ITC benefit के लिए voluntary registration consider करें।</span></li>
+        </ul>`;
+    }
+
+    // Documents
+    html += `
+      <div class="section-heading">Required Documents</div>
+      <div class="doc-grid">
+        ${docs.map(doc => `<div class="doc-item"><span>${doc.icon}</span><span>${doc.label}</span></div>`).join('')}
+      </div>
+    `;
+
+    document.getElementById('resultBody').innerHTML = html;
+    panel.classList.add('show');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ── Reset ──────────────────────────────────────── */
+  function resetForm() {
+    document.getElementById('businessType').value = '';
+    document.getElementById('stateType').value = 'normal';
+    document.getElementById('turnover').value = '';
+    document.getElementById('turnoverDisplay').textContent = '';
+    document.getElementById('chkInterState').checked = false;
+    document.getElementById('chkTDS').checked = false;
+    document.getElementById('chkReverse').checked = false;
+    document.getElementById('chkExempt').checked = false;
+    document.getElementById('chkVoluntary').checked = false;
+
+    // Reset toggles
+    ['regCatGroup','existingGSTGroup','turnoverUnit'].forEach(gid => {
+      const btns = document.querySelectorAll(`#${gid} .toggle-btn`);
+      btns.forEach((b,i) => { b.classList.remove('active'); if(i===0) b.classList.add('active'); });
+    });
+
+    const panel = document.getElementById('resultPanel');
+    panel.classList.remove('show');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+
+</body>
+</html>
